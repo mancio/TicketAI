@@ -1,0 +1,18 @@
+Subject: Cannot access billing page after recent update
+
+Hi support team,
+
+I've been a customer for 2 years and suddenly today I can't access the billing section of my account. 
+
+When I click on "Billing" in the menu, I just get a blank page with an error. I've tried:
+- Refreshing the page (multiple times)
+- Clearing my browser cache
+- Trying a different browser
+- Logging out and back in
+
+Nothing works. Can you please fix this urgently? I need to review my recent charges as I think I might have been overcharged. My account number is ACC-123456.
+
+Please let me know what's going on.
+
+Thanks,
+John Smith

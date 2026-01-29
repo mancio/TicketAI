@@ -1,0 +1,60 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install black pylint
+    
+    - name: Lint with pylint
+      run: |
+        pylint src/app/ --exit-zero
+    
+    - name: Format check with black
+      run: |
+        black --check src/ tests/
+    
+    - name: Run tests
+      run: |
+        python -m tests.test_smoke
+    
+    - name: Build container image
+      run: |
+        docker build -t ticketai:${{ github.sha }} .
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to Azure Container Registry
+      env:
+        REGISTRY_LOGIN: ${{ secrets.AZURE_REGISTRY_LOGIN }}
+        REGISTRY_PASSWORD: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+        REGISTRY_URL: ${{ secrets.AZURE_REGISTRY_URL }}
+      run: |
+        echo $REGISTRY_PASSWORD | docker login -u $REGISTRY_LOGIN --password-stdin $REGISTRY_URL
+        docker build -t $REGISTRY_URL/ticketai:${{ github.sha }} .
+        docker push $REGISTRY_URL/ticketai:${{ github.sha }}
+        docker tag $REGISTRY_URL/ticketai:${{ github.sha }} $REGISTRY_URL/ticketai:latest
+        docker push $REGISTRY_URL/ticketai:latest
